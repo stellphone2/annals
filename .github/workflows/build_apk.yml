@@ -41,12 +41,11 @@ jobs:
             cmake libffi-dev libssl-dev \
             build-essential ccache
 
-      # 5. Install Buildozer + Cython
-      #    Pin Cython < 3.0.0 — Cython 3.x breaks many Kivy C-extensions
-      - name: Install Buildozer
+      # 5. Install Python dependencies
+      - name: Install Python dependencies
         run: |
-          pip install --upgrade pip
-          pip install "cython<3.0.0" buildozer
+          python -m pip install --upgrade pip setuptools wheel
+          pip install buildozer cython
 
       # 6. Accept Android SDK licences by writing hash files directly.
       #    This is the most reliable non-interactive method — no prompts involved.
@@ -94,11 +93,15 @@ jobs:
           restore-keys: |
             buildozer-${{ runner.os }}-
 
-      # 8. Build! Point Buildozer at the runner's pre-installed SDK.
-      - name: Build APK
-        run: buildozer -v android debug
+      # 8. Build Android APK
+      - name: Build Android APK
         env:
+          ACCEPT_BUILD_TOOLS_CHECKSUMS: "true"
+          CI: "true"
           ANDROIDSDK: ${{ env.ANDROID_SDK_ROOT }}
+        run: |
+          # Pre-accept licenses and run debug build non-interactively
+          yes | buildozer -v android debug
 
       # 9. Upload the APK so you can download it from the Actions tab
       - name: Upload APK artifact
