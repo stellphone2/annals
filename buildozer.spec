@@ -37,16 +37,16 @@ orientation = portrait
 # (bool) Indicate if the application should be fullscreen or not
 fullscreen = 0
 
-# (int) Target Android API (34 = Android 14, recommended minimum for Play Store 2024+)
-android.api = 34
+# (int) Target Android API
+android.api = 33
 
-# (int) Minimum Android API your APK will run on  (Android 8.0)
-android.minapi = 26
+# (int) Minimum Android API your APK will run on (Android 5.0+, covers ~99% of devices)
+android.minapi = 21
 
 # (str) Android build-tools version to use — pin to avoid licence issues with latest
 android.build_tools_version = 34.0.0
 
-# (int) Android NDK version to use
+# (int) Android NDK version to use (full revision string)
 android.ndk = 25b
 
 # (bool) Automatically accept Android SDK licences

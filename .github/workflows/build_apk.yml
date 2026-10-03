@@ -25,7 +25,7 @@ jobs:
 
       # 3. Java 17 — required by sdkmanager 16+ that ships on the runner
       - name: Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -42,10 +42,11 @@ jobs:
             build-essential ccache
 
       # 5. Install Buildozer + Cython
+      #    Pin Cython < 3.0.0 — Cython 3.x breaks many Kivy C-extensions
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer cython
+          pip install "cython<3.0.0" buildozer
 
       # 6. Use the Android SDK already on the ubuntu-22.04 runner
       #    ($ANDROID_SDK_ROOT is set by the runner, no extra action needed).
@@ -63,7 +64,7 @@ jobs:
           # Install the packages Buildozer requires
           "$SDKMANAGER" \
             "platform-tools" \
-            "platforms;android-34" \
+            "platforms;android-33" \
             "build-tools;34.0.0"
 
       # 7. Cache the NDK + python-for-android (the slow part on first run)
