@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Buildozer output and cache
+.buildozer/
+bin/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# App generated data files (don't commit user data)
+annals_notes.json
+annals_notes.xlsx
+annals_notes.docx
+annals_notes.pdf
+annals_notes.json.v1.bak
+*.tmp
+error_log.txt
+
+# Word temp files
+~$*.docx
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
