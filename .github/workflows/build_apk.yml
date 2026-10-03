@@ -51,10 +51,23 @@ jobs:
           restore-keys: |
             buildozer-
 
-      # 6. Build the APK (debug mode — no signing key needed)
-      - name: Build APK
+      # 6. Pre-accept Android SDK licences so sdkmanager never blocks on a prompt
+      - name: Accept Android SDK licenses
         run: |
-          buildozer -v android debug
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
+          # android-sdk-license hashes (covers build-tools, platform-tools, etc.)
+          printf '\n24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n8933bad161af4178b1185d1a37fbf41ea5269c55\n' \
+            > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          # android-sdk-preview-license hash
+          printf '\n84831b9409646a918e30573bab4c9c91346d8abd\n' \
+            > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          # intel-android-extra-license hash
+          printf '\nd975f751698a77b662f1254ddbeed3901e976f5a\n' \
+            > $HOME/.buildozer/android/platform/android-sdk/licenses/intel-android-extra-license
+
+      # 7. Build the APK — pipe `yes` as belt-and-suspenders for any remaining prompts
+      - name: Build APK
+        run: yes | buildozer -v android debug 2>&1 | tee build.log; exit ${PIPESTATUS[1]}
         env:
           ANDROID_SDK_ROOT: ${{ github.workspace }}/.buildozer/android/platform/android-sdk
 

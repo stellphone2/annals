@@ -43,8 +43,14 @@ android.api = 34
 # (int) Minimum Android API your APK will run on  (Android 8.0)
 android.minapi = 26
 
+# (str) Android build-tools version to use — pin to avoid licence issues with latest
+android.build_tools_version = 34.0.0
+
 # (int) Android NDK version to use
 android.ndk = 25b
+
+# (bool) Automatically accept Android SDK licences
+android.accept_sdk_license = True
 
 # (str) Android NDK directory (optional; buildozer downloads it automatically)
 # android.ndk_path =
