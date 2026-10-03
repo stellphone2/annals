@@ -40,7 +40,14 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython
 
-      # 5. Set up a MODERN Android SDK (cmdline-tools, not the old deprecated 'tools').
+      # 5. Ensure Java 17 is the active JDK (sdkmanager 16+ requires JDK 17+)
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 6. Set up a MODERN Android SDK (cmdline-tools, not the old deprecated 'tools').
       #    This action installs sdkmanager at the path Buildozer expects and sets
       #    ANDROID_SDK_ROOT / ANDROID_HOME environment variables automatically.
       - name: Set up Android SDK
