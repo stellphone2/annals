@@ -48,20 +48,38 @@ jobs:
           pip install --upgrade pip
           pip install "cython<3.0.0" buildozer
 
-      # 6. Use the Android SDK already on the ubuntu-22.04 runner
-      #    ($ANDROID_SDK_ROOT is set by the runner, no extra action needed).
-      #    Accept all licences and install the exact packages Buildozer needs.
+      # 6. Accept Android SDK licences by writing hash files directly.
+      #    This is the most reliable non-interactive method — no prompts involved.
       - name: Accept SDK licences and install packages
         run: |
-          # Find sdkmanager wherever cmdline-tools put it
+          SDK_LICENCES="$ANDROID_SDK_ROOT/licenses"
+          mkdir -p "$SDK_LICENCES"
+
+          # android-sdk-license  (covers build-tools, platforms, platform-tools)
+          printf '\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n' \
+            > "$SDK_LICENCES/android-sdk-license"
+
+          # android-sdk-preview-license
+          printf '\n84831b9409646a918e30573bab4c9c91346d8abd\n' \
+            > "$SDK_LICENCES/android-sdk-preview-license"
+
+          # intel-android-extra-license
+          printf '\nd975f751698a77b662f1254ddbeed3901e976f5a\n' \
+            > "$SDK_LICENCES/intel-android-extra-license"
+
+          # google-gdk-license
+          printf '\n33b6a2b64607f11b759f320ef9dff4ae5c47d97a\n' \
+            > "$SDK_LICENCES/google-gdk-license"
+
+          echo "Licence files written:"
+          ls -la "$SDK_LICENCES/"
+
+          # Find sdkmanager (cmdline-tools location varies by runner image version)
           SDKMANAGER=$(find "$ANDROID_SDK_ROOT/cmdline-tools" \
                             -name sdkmanager -type f 2>/dev/null | head -1)
-          echo "Using sdkmanager at: $SDKMANAGER"
+          echo "Using sdkmanager: $SDKMANAGER"
 
-          # Accept every licence non-interactively
-          yes | "$SDKMANAGER" --licenses || true
-
-          # Install the packages Buildozer requires
+          # Install the SDK packages Buildozer needs
           "$SDKMANAGER" \
             "platform-tools" \
             "platforms;android-33" \
