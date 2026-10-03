@@ -5,7 +5,6 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  # Also allow manual trigger from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -24,7 +23,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 3. Install system dependencies required by Buildozer / Android SDK
+      # 3. Install system dependencies required by Buildozer / p4a
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -41,37 +40,39 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython
 
-      # 5. Cache the Buildozer global directory (Android SDK/NDK, p4a, etc.)
-      #    This can save 10-20 minutes on subsequent runs.
-      - name: Cache Buildozer global directory
+      # 5. Set up a MODERN Android SDK (cmdline-tools, not the old deprecated 'tools').
+      #    This action installs sdkmanager at the path Buildozer expects and sets
+      #    ANDROID_SDK_ROOT / ANDROID_HOME environment variables automatically.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 6. Accept all SDK licenses and install the exact packages we need
+      - name: Accept SDK licenses and install packages
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager \
+            "cmdline-tools;latest" \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+      # 7. Cache only the NDK + python-for-android (the slow downloads).
+      #    The SDK itself is handled by the action above.
+      - name: Cache Buildozer NDK and p4a
         uses: actions/cache@v4
         with:
           path: ~/.buildozer
-          key: buildozer-${{ hashFiles('buildozer.spec') }}
+          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
           restore-keys: |
-            buildozer-
+            buildozer-${{ runner.os }}-
 
-      # 6. Pre-accept Android SDK licences so sdkmanager never blocks on a prompt
-      - name: Accept Android SDK licenses
-        run: |
-          mkdir -p $HOME/.buildozer/android/platform/android-sdk/licenses
-          # android-sdk-license hashes (covers build-tools, platform-tools, etc.)
-          printf '\n24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n8933bad161af4178b1185d1a37fbf41ea5269c55\n' \
-            > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          # android-sdk-preview-license hash
-          printf '\n84831b9409646a918e30573bab4c9c91346d8abd\n' \
-            > $HOME/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
-          # intel-android-extra-license hash
-          printf '\nd975f751698a77b662f1254ddbeed3901e976f5a\n' \
-            > $HOME/.buildozer/android/platform/android-sdk/licenses/intel-android-extra-license
-
-      # 7. Build the APK — pipe `yes` as belt-and-suspenders for any remaining prompts
+      # 8. Build the APK — tell Buildozer to reuse the SDK the action installed
       - name: Build APK
-        run: yes | buildozer -v android debug 2>&1 | tee build.log; exit ${PIPESTATUS[1]}
+        run: buildozer -v android debug
         env:
-          ANDROID_SDK_ROOT: ${{ github.workspace }}/.buildozer/android/platform/android-sdk
+          ANDROIDSDK: ${{ env.ANDROID_SDK_ROOT }}
 
-      # 7. Upload the APK so you can download it from the Actions tab
+      # 9. Upload the APK so you can download it from the Actions tab
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
