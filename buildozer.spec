@@ -26,7 +26,7 @@ version = 1.0
 # All Python packages your app imports must be listed here.
 # 'android' is the pyjnius/python-for-android glue; kivy includes it.
 # -----------------------------------------------------------------------
-requirements = python3,kivy==2.3.0,openpyxl,python-docx,fpdf2
+requirements = python3,kivy==2.3.0,openpyxl,python-docx,fpdf2,androidstorage4kivy
 
 # (str) The icon of the application
 # icon.filename = %(source.dir)s/icon.png
