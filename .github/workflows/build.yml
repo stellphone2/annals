@@ -1,56 +1,98 @@
-name: Build APK
+[app]
 
-on:
-  workflow_dispatch:
-  push:
-    branches: [ main ]
+# (title) Application title
+title = My Application
 
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 90
-    steps:
-      - uses: actions/checkout@v4
+# (package.name) Package name
+package.name = myapp
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+# (package.domain) Package domain (needed for android packaging)
+package.domain = org.example
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+# (source.dir) Source code directory where main.py lives
+source.dir = .
 
-      - name: System packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip autoconf libtool pkg-config \
-            zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake \
-            libffi-dev libssl-dev build-essential ccache
+# (source.include_exts) Source files extensions to include
+source.include_exts = py,png,jpg,kv,atlas,json,txt
 
-      - name: Cache Buildozer
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.buildozer
-            .buildozer
-          key: buildozer-\({{ runner.os }}-\){{ hashFiles('buildozer.spec') }}
-          restore-keys: |
-            buildozer-${{ runner.os }}-
+# (list) Application requirements
+# Add any extra dependencies your app uses (e.g., requests, pillow)
+requirements = python3,kivy
 
-      - name: Install Buildozer & Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install --upgrade "cython<3" buildozer setuptools
+# (str) Custom source code for requirements
+# requirements.source.kivy = ../kivy
 
-      - name: Build debug APK
-        run: |
-          # Run buildozer while keeping logs concise to avoid runner UI truncation
-          buildozer -v android debug
+# (str) Main executable filename
+# main.filename = main.py
 
-      - name: Upload APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: annals-apk
-          path: bin/*.apk
+# (list) Permissions
+# Uncomment permissions if your app requires them
+# android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE
+
+# (int) Target Android API, should be as high as possible.
+android.api = 33
+
+# (int) Minimum API required
+android.minapi = 21
+
+# (int) Android NDK version to use
+android.ndk = 25b
+
+# (bool) Accept SDK license automatically
+# CRITICAL for non-interactive builds like GitHub Actions
+android.accept_sdk_license = True
+
+# (str) Android NDK architecture to build for
+# Arm64-v8a is required for modern 64-bit devices and Play Store standard
+android.archs = arm64-v8a, armeabi-v7a
+
+# (bool) Skip Android SDK/NDK update step if already downloaded
+android.skip_update = False
+
+# (str) Application icon
+# icon.filename = %(source.dir)s/data/icon.png
+
+# (str) Presplash screen image
+# presplash.filename = %(source.dir)s/data/presplash.png
+
+# (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
+orientation = portrait
+
+# (bool) Indicate if the application should be fullscreen or not
+fullscreen = 1
+
+
+[buildozer]
+
+# (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
+# Keep at 1 or 2. In CI/CD, 1 avoids log overflow/truncation.
+log_level = 2
+
+# (int) Display warning if buildozer is run as root (0 = disable, 1 = enable)
+warn_on_root = 1
+
+# (str) Path to build directory (default 'bin' in current directory)
+# bin_dir = ./bin
+
+
+# -----------------------------------------------------------------------------
+# Advanced / Optional Settings
+# -----------------------------------------------------------------------------
+
+# (str) Android entry point, default is ok for Kivy
+# android.entrypoint = org.kivy.android.PythonActivity
+
+# (list) List of Java .jar files to add to the libs so that Pyjnius can access them
+# android.add_jars = foo.jar,bar.jar
+
+# (list) List of Java files to add to the project (Pyjnius)
+# android.add_src =
+
+# (list) Android AAR archives to add
+# android.add_aars =
+
+# (list) Gradle dependencies to add
+# android.gradle_dependencies =
+
+# (bool) Enable AndroidX support
+android.enable_androidx = True
