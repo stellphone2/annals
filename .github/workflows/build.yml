@@ -34,17 +34,23 @@ jobs:
           path: |
             ~/.buildozer
             .buildozer
-          key: buildozer-${{ hashFiles('buildozer.spec') }}
+          key: buildozer-\({{ runner.os }}-\){{ hashFiles('buildozer.spec') }}
+          restore-keys: |
+            buildozer-${{ runner.os }}-
 
-      - name: Install Buildozer
-        run: pip install --upgrade buildozer "cython<3"
+      - name: Install Buildozer & Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade "cython<3" buildozer setuptools
 
       - name: Build debug APK
-        run: buildozer -v android debug
+        run: |
+          # Run buildozer while keeping logs concise to avoid runner UI truncation
+          buildozer -v android debug
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: annals-apk
           path: bin/*.apk
-
